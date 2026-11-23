@@ -1,0 +1,75 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "profiles": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && (!data.exists() || newData.child('role').val() === data.child('role').val())",
+        ".validate": "newData.hasChildren(['id', 'full_name', 'role']) && newData.child('id').val() === $uid && (newData.child('role').val() === 'student' || newData.child('role').val() === 'teacher')"
+      }
+    },
+    "classes": {
+      ".read": "auth != null",
+      "$classId": {
+        ".write": "auth != null && root.child('profiles').child(auth.uid).child('role').val() === 'teacher' && ((!data.exists() && newData.child('teacher_id').val() === auth.uid) || (data.child('teacher_id').val() === auth.uid && newData.child('teacher_id').val() === auth.uid))"
+      }
+    },
+    "classRoster": {
+      ".read": "auth != null",
+      "$classId": {
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && root.child('profiles').child(auth.uid).child('role').val() === 'student' && (newData.val() === true || !newData.exists())"
+        }
+      }
+    },
+    "enrollments": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$classId": {
+          ".write": "auth != null && auth.uid === $uid && root.child('profiles').child(auth.uid).child('role').val() === 'student' && (newData.hasChildren(['created_at']) || !newData.exists())"
+        }
+      }
+    },
+    "posts": {
+      ".read": "auth != null",
+      "$postId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('user_id').val() === auth.uid) || (data.child('user_id').val() === auth.uid && newData.child('user_id').val() === auth.uid))",
+        "likes": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && (newData.val() === true || !newData.exists())"
+          }
+        },
+        "comments": {
+          "$commentId": {
+            ".write": "auth != null && !data.exists() && newData.child('user_id').val() === auth.uid && newData.child('id').val() === $commentId"
+          }
+        }
+      }
+    },
+    "inbox": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$messageId": {
+          ".write": "auth != null && newData.child('id').val() === $messageId && newData.child('sender_id').val() === auth.uid && ($uid === newData.child('sender_id').val() || $uid === newData.child('recipient_id').val())"
+        }
+      }
+    },
+    "messageReads": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$messageId": {
+          ".write": "auth != null && auth.uid === $uid && (newData.val() === true || !newData.exists())"
+        }
+      }
+    },
+    "files": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$fileId": {
+          ".write": "auth != null && auth.uid === $uid && (newData.child('user_id').val() === $uid || !newData.exists())"
+        }
+      }
+    }
+  }
+}
